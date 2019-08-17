@@ -101,24 +101,26 @@ static int ak_asn_create_primitive_tlv(ak_asn_tlv p_tlv, tag data_tag, size_t da
     /* Добавляем тег */
     p_tlv->m_tag = data_tag;
 
-    /* Добавляем длину, и кол-во байт, необходиоме для кодирования длины */
-    if(data_len)
-    {
-        p_tlv->m_data_len = (ak_uint32) data_len;
-        p_tlv->m_len_byte_cnt = new_asn_get_len_byte_cnt(data_len);
-    }
+    p_tlv->m_data_len = (ak_uint32) data_len;
+    p_tlv->m_len_byte_cnt = new_asn_get_len_byte_cnt(data_len);
 
-    /* Добавляем данные */
-    if(free_mem && p_data)
-    {
-        p_tlv->m_data.m_primitive_data = malloc(data_len * sizeof(ak_byte));
-        if(!p_tlv->m_data.m_primitive_data)
-            return ak_error_out_of_memory;
-
-        memcpy(p_tlv->m_data.m_primitive_data, p_data, data_len);
-    }
+    if(data_len == 0)
+        p_tlv->m_data.m_primitive_data = NULL;
     else
-        p_tlv->m_data.m_primitive_data = p_data;
+    {
+
+        /* Добавляем данные */
+        if (free_mem && p_data)
+        {
+            p_tlv->m_data.m_primitive_data = malloc(data_len * sizeof(ak_byte));
+            if (!p_tlv->m_data.m_primitive_data)
+                return ak_error_out_of_memory;
+
+            memcpy(p_tlv->m_data.m_primitive_data, p_data, data_len);
+        }
+        else
+            p_tlv->m_data.m_primitive_data = p_data;
+    }
 
     p_tlv->m_free_mem = free_mem;
 
@@ -275,13 +277,17 @@ void ak_asn_free_tree(ak_asn_tlv p_tlv_root)
                 ak_asn_free_tree(&p_tlv_root->m_data.m_constructed_data->mp_arr_of_data[index]);
             }
 
+
             free(p_tlv_root->m_data.m_constructed_data->mp_arr_of_data);
         }
         else
         {
             /* Очищаем данные, если объект ими владеет */
-            if(p_tlv_root->m_free_mem && p_tlv_root->m_data.m_primitive_data)
-                free(p_tlv_root->m_data.m_primitive_data);
+            if(p_tlv_root->m_free_mem)
+            {
+                if(p_tlv_root->m_data.m_primitive_data)
+                    free(p_tlv_root->m_data.m_primitive_data);
+            }
         }
 
         /* Очищаем название данных, если оно указано */
@@ -482,6 +488,9 @@ static void asn_print_universal_data(tag data_tag, ak_uint32 data_len, ak_byte* 
             printf("%s\n", str);
             free(str);
             break;
+        case TNULL:
+            putchar('\n');
+            break;
         default:
             SET_TEXT_COLOR_RED;
             printf("Unknown data! ");
@@ -647,6 +656,9 @@ int ak_asn_parse_data(ak_pointer p_asn_data, size_t size, ak_asn_tlv* pp_tlv)
         if(p_curr + data_len > p_end)
             return ak_error_message(ak_error_wrong_length, __func__, "wrong data length");
 
+        if(data_len == 0)
+            p_curr = NULL;
+
         if((error = ak_asn_create_primitive_tlv(*pp_tlv, data_tag, data_len, p_curr, ak_false)) != ak_error_ok)
             return ak_error_message(error, __func__, "can not create primitive tlv");
     }
@@ -686,10 +698,17 @@ static int ak_asn_encode_tlv(ak_asn_tlv p_tlv, ak_byte** pp_pos, ak_byte* p_end)
     }
     else /* Кодирование примитивных данных */
     {
+        if(!p_tlv->m_data.m_primitive_data && p_tlv->m_data_len > 0)
+            return ak_error_message(ak_error_null_pointer, __func__, "data absent");
+
         new_asn_put_tag(p_tlv->m_tag, pp_pos);
         new_asn_put_len(p_tlv->m_data_len, p_tlv->m_len_byte_cnt, pp_pos);
-        memcpy(*pp_pos, p_tlv->m_data.m_primitive_data, p_tlv->m_data_len);
-        (*pp_pos) +=  p_tlv->m_data_len;
+
+        if(p_tlv->m_data_len > 0)
+        {
+            memcpy(*pp_pos, p_tlv->m_data.m_primitive_data, p_tlv->m_data_len);
+            (*pp_pos) +=  p_tlv->m_data_len;
+        }
     }
 
     return ak_error_ok;

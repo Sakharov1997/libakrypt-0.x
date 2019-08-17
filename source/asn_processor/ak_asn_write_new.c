@@ -70,6 +70,9 @@ int ak_asn_encode_universal_data(ak_uint8 tag_number, ak_pointer p_data, char* p
     case TNUMERIC_STRING:
         error = new_asn_put_numeric_string((numeric_string)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
         break;
+    case TNULL:
+        p_tlv->m_data_len = 0;
+        break;
     default:
         return ak_error_message(ak_error_invalid_value, __func__, "unsupported data type");
     }
