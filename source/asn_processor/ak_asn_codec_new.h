@@ -49,11 +49,11 @@
 #define TBMP_STRING         0x1Eu
 
 /*! \brief Биты, определяющие класс данных */
-#define DATA_CLASS(x)     (x & 0xC0)
+#define DATA_CLASS(x)     ((x) & 0xC0)
 /*! \brief Бит, определяющий структуру данных */
-#define DATA_STRUCTURE(x) (x & 0x20)
+#define DATA_STRUCTURE(x) ((x) & 0x20)
 /*! \brief Биты, определяющие номер тега */
-#define TAG_NUMBER(x)     (x & 0x1F)
+#define TAG_NUMBER(x)     ((x) & 0x1F)
 
 /*! \brief Длина тега (текущая реализация поддерживает кодирование
  *         и декодирование тегов, представленных одним байтом) */
@@ -148,71 +148,77 @@ struct s_asn_tlv
 
 typedef struct s_asn_tlv* ak_asn_tlv;
 
-/*! \brief Функция кодирования ASN.1 данных. */
+/* ---------------------- Функции управления структурой s_asn_tlv (деревом) ---------------------- */
+
+/*! \brief Преобразует ASN.1 последовательность в структуру s_asn_tlv (дерево). */
 int ak_asn_build_data(ak_asn_tlv p_tlv, ak_byte** pp_asn_data, ak_uint32* p_size);
-/*! \brief Функция декодирования ASN.1 данных. */
+
+/*! \brief Преобразует структуру s_asn_tlv (дерево) в ASN.1 последовательность. */
 int ak_asn_parse_data(ak_pointer p_asn_data, size_t size, ak_asn_tlv* pp_tlv);
-/*! \brief Функция создания контекста составных данных. */
-int ak_asn_construct_data_ctx_create(ak_asn_tlv p_tlv, tag constructed_data_tag, char* p_data_name);
-/*! \brief Функция создания контекста примитивных данных. */
 
-// TODO: Добавить в функцию аргумент, который указывал бы, владеет ли контекст данными
-//       или просто указывает на них. bool_t *p_data_copied:
-//              1) Если значение *p_data_copied == ak_true, то данные копируются в объект s_asn_tlv;
-//              2) Если значение *p_data_copied == ak_false, то объект s_asn_tlv просто ссылается на данные;
-//              3) Если значение p_data_copied == NULL, то см. п. 1);
-
+/*! \brief Кодирует примитивные ASN.1 данные базовых типов. */
 int ak_asn_encode_universal_data(ak_uint8 tag_number, ak_pointer p_data, char* p_name, ak_asn_tlv p_tlv);
+
+/*! \brief Декодирует примитивные ASN.1 данные базовых типов. */
 int ak_asn_decode_universal_data(ak_asn_tlv p_tlv, ak_pointer* pp_data, ak_uint32* p_size);
 
+/*! \brief Создает контекст составных данных. */
+int ak_asn_construct_data_ctx_create(ak_asn_tlv p_tlv, tag constructed_data_tag, char* p_data_name);
+
+/*! \brief Создает контекст примитивных данных. */
 int ak_asn_primitive_data_ctx_create(ak_asn_tlv p_tlv, tag data_tag, ak_uint32 data_len, ak_pointer p_data, char* p_data_name);
-/*! \brief Функция получения размера памяти, необходимого для кодирования ASN.1 данных. */
+
+/*! \brief Получает размер памяти, необходимый для кодирования ASN.1 данных. */
 int ak_asn_get_size(ak_asn_tlv p_tlv, ak_uint32* p_size);
-/*! \brief Функция пересчета длинны составных данных. (Используется для обновления информации о длинах после изменений.) */
+
+/*! \brief Пересчитывает длинны составных данных. (Используется для обновления информации о длинах после изменений.) */
 int ak_asn_update_size(ak_asn_tlv p_root_tlv);
-/*! \brief Функция отображения структуры ASN.1 данных в виде дерева. */
+
+/*! \brief Отображет посредством псевдографики структуру ASN.1 данных в виде дерева. */
 void new_ak_asn_print_tree(ak_asn_tlv p_tree);
 
-/*! \brief Функция вывода шестнадцатеричных данных. */
+/*! \brief Выводит шестнадцатеричные данных. */
 void ak_asn_print_hex_data(ak_byte* p_data, ak_uint32 size);
 
-/*! \brief Функция добавления вложенных элементов в составной объект s_asn_tlv. */
+/*! \brief Добавляет вложенный элемент в составной объект s_asn_tlv. */
 int ak_asn_add_nested_elems(ak_asn_tlv p_tlv_parent, s_asn_tlv_t p_tlv_children[], ak_uint8 count);
 
-/*! \brief Функция удаления вложенного элемента из составного объекта s_asn_tlv. */
+/*! \brief Удаляет вложенный элемент из составного объекта s_asn_tlv. */
 int ak_asn_delete_nested_elem(ak_asn_tlv p_tlv_parent, ak_uint32 index);
 
-/*! \brief Функция очистки памяти, выделенной под хранения структуры дерева и внутренних данных. */
+/*! \brief Очищает память, выделенную под хранение структуры дерева и внутренних данных. */
 void ak_asn_free_tree(ak_asn_tlv p_tlv_root);
 
-/*! \brief Декодирование тега из ASN.1 последовательности. */
+/* ---------------------- Функции декодирования ASN.1 данных ---------------------- */
+
+/*! \brief Декодирует тег данных из ASN.1 последовательности. */
 int new_asn_get_tag(ak_byte** pp_data, tag *p_tag);
 
-/*! \brief Декодирование длины данных из DER последовательности. */
+/*! \brief Декодирует длину данных из ASN.1 последовательности. */
 int new_asn_get_len(ak_byte** pp_data, size_t *p_len);
 
-/*! \brief Декодирование целого числа из DER последовательности. */
+/*! \brief Декодирует Integer из ASN.1 последовательности. */
 int new_asn_get_int(ak_byte *p_buff, ak_uint32 len, integer *p_val);
 
-/*! \brief Декодирование UTF-8 строки из DER последовательности. */
+/*! \brief Декодирует UTF-8 string из ASN.1 последовательности. */
 int new_asn_get_utf8string(ak_byte *p_buff, size_t len, utf8_string *p_str);
 
-/*! \brief Декодирование массива октетов из DER последовательности. */
+/*! \brief Декодирует Octet string из ASN.1 последовательности. */
 int new_asn_get_octetstr(ak_byte *p_buff, size_t len, octet_string *p_dst);
 
-/*! \brief Декодирование строки из DER последовательности. */
+/*! \brief Декодирует Visible string из ASN.1 последовательности. */
 int new_asn_get_vsblstr(ak_byte *p_buff, size_t len, visible_string *p_str);
 
-/*! \brief Декодирование идентификатора объекта из DER последовательности. */
+/*! \brief Декодирует Object identifier из ASN.1 последовательности. */
 int new_asn_get_objid(ak_byte *p_buff, size_t len, object_identifier *p_objid);
 
-/*! \brief Декодирование массива байтов, представляющих произвольные флаги, из DER последовательности. */
+/*! \brief Декодирует Bit string из ASN.1 последовательности. */
 int new_asn_get_bitstr(ak_byte *p_buff, size_t len, bit_string *p_dst);
 
-/*! \brief Декодирование значения типа boolean из DER последовательности. */
+/*! \brief Декодирует Boolean из ASN.1 последовательности. */
 int new_asn_get_bool(ak_byte *p_buff, size_t len, boolean *p_value);
 
-/*! \brief Декодирование времени, представленном в общепринятом формате, из DER последовательности. */
+/*! \brief Декодирует Generalized time из ASN.1 последовательности. */
 int new_asn_get_generalized_time(ak_byte *p_buff, size_t len, generalized_time *p_time);
 
 /*! \brief Декодирует Printable string из ASN.1 последовательности. */
@@ -227,34 +233,36 @@ int new_asn_get_numeric_string(ak_byte* p_buff, ak_uint32 size, numeric_string* 
 /*! \brief Декодирует UTC time из ASN.1 последовательности. */
 int new_asn_get_utc_time(ak_byte* p_buff, ak_uint32 len, utc_time* p_time);
 
-/*! \brief Добавление тега в DER последовательность. */
+/* ---------------------- Функции кодирования ASN.1 данных ---------------------- */
+
+/*! \brief Кодирует тег данных в ASN.1 последовательность. */
 int new_asn_put_tag(tag tag, ak_byte **pp_buff);
 
-/*! \brief Добавление длины данных в DER последовательность. */
+/*! \brief Кодирует длину данных в ASN.1 последовательность. */
 int new_asn_put_len(size_t len, ak_uint32 len_byte_cnt, ak_byte **pp_buff);
 
-/*! \brief Добавление целого числа в DER последовательность. */
+/*! \brief Кодирует Integer в ASN.1 последовательность. */
 int new_asn_put_int(integer val, ak_byte** pp_buff, ak_uint32* p_size);
 
-/*! \brief Добавление UTF-8 строки в DER последовательность. */
+/*! \brief Кодирует UTF-8 string в ASN.1 последовательность. */
 int new_asn_put_utf8string(utf8_string str, ak_byte** pp_buff, ak_uint32* p_size);
 
-/*! \brief Добавление массива октетов в DER последовательность. */
+/*! \brief Кодирует Octet string в ASN.1 последовательность. */
 int new_asn_put_octetstr(octet_string src, ak_byte** pp_buff, ak_uint32* p_size);
 
-/*! \brief Добавление строки в DER последовательность. */
+/*! \brief Кодирует Visible string в ASN.1 последовательность. */
 int new_asn_put_vsblstr(visible_string str, ak_byte** pp_buff, ak_uint32* p_size);
 
-/*! \brief Добавление идентификатора объекта в DER последовательность. */
+/*! \brief Кодирует Object identifier в ASN.1 последовательность. */
 int new_asn_put_objid(object_identifier obj_id, ak_byte** pp_buff, ak_uint32* p_size);
 
-/*! \brief Добавление массива байтов, представляющих произвольные флаги, в DER последовательность. */
+/*! \brief Кодирует Bit string в ASN.1 последовательность. */
 int new_asn_put_bitstr(bit_string src, ak_byte** pp_buff, ak_uint32* p_size);
 
-/*! \brief Добавление значения типа boolean в DER последовательность. */
+/*! \brief Кодирует Boolean в ASN.1 последовательность. */
 int new_asn_put_bool(boolean val, ak_byte** pp_buff, ak_uint32* p_size);
 
-/*! \brief Добавление времени, представленном в общепринятом формате, в DER последовательность. */
+/*! \brief Кодирует Generalized time в ASN.1 последовательность. */
 int new_asn_put_generalized_time(generalized_time time, ak_byte** pp_buff, ak_uint32* p_size);
 
 /*! \brief Кодирует IA5 string в ASN.1 последовательность. */
@@ -269,29 +277,40 @@ int new_asn_put_numeric_string(numeric_string str, ak_byte** pp_buff, ak_uint32*
 /*! \brief Кодирует UTC time в ASN.1 последовательность. */
 int new_asn_put_utc_time(utc_time time, ak_byte** pp_buff, ak_uint32* p_size);
 
-/* Tools */
+/* ---------------------- Tools ---------------------- */
 
-/*! \brief Метод для определения необходимого кол-ва памяти для хранения длины данных. */
+/*! \brief Определяет необходимое количество памяти для хранения длины данных. */
 ak_uint8 new_asn_get_len_byte_cnt(size_t len);
 
-/*! \brief Метод для определения необходимого кол-ва памяти для хранения идентификатора объекта. */
+/*! \brief Определяет необходимое количество памяти для хранения данных типа Object identifier. */
 ak_uint8 new_asn_get_oid_byte_cnt(object_identifier oid);
 
-/*! \brief Метод для определения необходимого кол-ва памяти для хранения времени в общепринятом формате. */
+/*! \brief Определяет необходимое количество памяти для хранения данных типа Generalized time. */
 ak_uint8 new_asn_get_gentime_byte_cnt(generalized_time time);
 
+/*! \brief Получает символьное представление идентификатора объекта (Object identifier). */
 int ak_asn_get_oid_desc(object_identifier oid, char** pp_desc);
 
+/*! \brief Заполняет структуру bit_string данными из строки. */
 int ak_bitstr_set_str(bit_string* p_bit_str, char* str);
+
+/*! \brief Заполняет структуру bit_string данными из значение типа ak_uint64. */
 int ak_bitstr_set_ui(bit_string* p_bit_str, ak_uint64 val64, ak_uint8 used_bits);
+
+/*! \brief Заполняет структуру bit_string данными из массива. */
 int ak_bitstr_set_arr(bit_string* p_bit_str, ak_byte* p_data, ak_uint32 size, ak_uint8 unused_bits);
 
+/*! \brief Представляет данные из структуры bit_string в виде строки. */
 int ak_bitstr_get_str(bit_string* p_bit_str, char** pp_str);
-int ak_bitstr_get_ui(bit_string* p_bit_str, ak_uint64* p_val64, ak_uint8* p_used_bits);
-int ak_bitstr_get_arr(bit_string* p_bit_str, ak_byte** pp_data, ak_uint32* p_size, ak_uint8* p_unused_bits);
-bool_t check_prntbl_str(printable_string str, ak_uint32 len);
 
-int ak_asn_realloc(ak_pointer* pp_mem, size_t old_size, size_t new_size);
+/*! \brief Записывает данные из структуры bit_string в переменную типа ak_uint64. */
+int ak_bitstr_get_ui(bit_string* p_bit_str, ak_uint64* p_val64, ak_uint8* p_used_bits);
+
+/*! \brief Записывает данные из структуры bit_string в массива. */
+int ak_bitstr_get_arr(bit_string* p_bit_str, ak_byte** pp_data, ak_uint32* p_size, ak_uint8* p_unused_bits);
+
+/*! \brief Проверяет строку на соответствие формату Printable string. */
+bool_t check_prntbl_str(printable_string str, ak_uint32 len);
 
 /*! \brief Освобождение памяти. */
 //void asn_free_int(integer *p_val);
