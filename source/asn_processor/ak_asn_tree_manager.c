@@ -59,6 +59,12 @@ static char prefix[1000] = "\0";
 #define SET_TEXT_COLOR_RED      printf("\x1b[31m")
 #define SET_TEXT_COLOR_BLUE     printf("\x1b[34m")
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param data_tag тег данных
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 static int ak_asn_create_constructed_tlv(ak_asn_tlv p_tlv, tag data_tag)
 {
     if(DATA_STRUCTURE(data_tag) != CONSTRUCTED)
@@ -93,6 +99,15 @@ static int ak_asn_create_constructed_tlv(ak_asn_tlv p_tlv, tag data_tag)
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param data_tag тег данных
+    @param data_len длина данных
+    @param p_data указатель на данные
+    @param free_mem флаг, определяющий владеет структура данными или нет
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 static int ak_asn_create_primitive_tlv(ak_asn_tlv p_tlv, tag data_tag, size_t data_len, ak_pointer p_data, bool_t free_mem)
 {
     if(DATA_STRUCTURE(data_tag) != PRIMITIVE)
@@ -129,6 +144,13 @@ static int ak_asn_create_primitive_tlv(ak_asn_tlv p_tlv, tag data_tag, size_t da
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param constructed_data_tag тег состаных данных
+    @param p_data_name название данных
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_construct_data_ctx_create(ak_asn_tlv p_tlv, tag constructed_data_tag, char* p_data_name)
 {
     int error; /* Код ошибки */
@@ -155,6 +177,15 @@ int ak_asn_construct_data_ctx_create(ak_asn_tlv p_tlv, tag constructed_data_tag,
 }
 
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param data_tag тег данных
+    @param data_len длина данных
+    @param p_data указатель на данные
+    @param p_data_nameназвание данных
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_primitive_data_ctx_create(ak_asn_tlv p_tlv, tag data_tag, ak_uint32 data_len, ak_pointer p_data, char* p_data_name)
 {
     int error; /* Код ошибки */
@@ -181,11 +212,18 @@ int ak_asn_primitive_data_ctx_create(ak_asn_tlv p_tlv, tag data_tag, ak_uint32 d
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv_parent указатель на родительскую структуру, представляющую блок TLV
+    @param p_tlv_children массив дочерних структур, представляющих блоки TLV
+    @param count количество дочерних структур
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_add_nested_elems(ak_asn_tlv p_tlv_parent, s_asn_tlv_t p_tlv_children[], ak_uint8 count)
 {
-    ak_uint8 index; /* Индекс элемента */
-    ak_uint8 curr_size; /* Текущее кол-во элементов в массиве */
-    ak_uint32  new_size;
+    ak_uint8  index; /* Индекс элемента */
+    ak_uint8  curr_size; /* Текущее кол-во элементов в массиве */
+    ak_uint32 new_size; /* Новое кол-во элементов в массиве */
 
     if(!p_tlv_parent || !p_tlv_children)
         return ak_error_null_pointer;
@@ -204,12 +242,9 @@ int ak_asn_add_nested_elems(ak_asn_tlv p_tlv_parent, s_asn_tlv_t p_tlv_children[
         if(new_size > 255) /* Проверка, чтобы не переполнить тип ak_uint8 */
             return ak_error_message(ak_error_out_of_memory, __func__, "change type for storing number of nested elements");
 
-
         p_tlv_parent->m_data.m_constructed_data->mp_arr_of_data = realloc(p_tlv_parent->m_data.m_constructed_data->mp_arr_of_data, new_size * sizeof(s_asn_tlv_t));
         if(!p_tlv_parent->m_data.m_constructed_data->mp_arr_of_data)
             return ak_error_out_of_memory;
-
-        //ak_asn_realloc((ak_pointer*)&p_tlv_parent->m_data.m_constructed_data->mp_arr_of_data, curr_size * sizeof(s_asn_tlv_t), new_size * sizeof(s_asn_tlv_t));
 
         p_tlv_parent->m_data.m_constructed_data->m_alloc_size = (ak_uint8)new_size;
     }
@@ -226,6 +261,12 @@ int ak_asn_add_nested_elems(ak_asn_tlv p_tlv_parent, s_asn_tlv_t p_tlv_children[
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv_parent указатель на родительскую структуру, представляющую блок TLV
+    @param index индекс дочернего элемента в массиве
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_delete_nested_elem(ak_asn_tlv p_tlv_parent, ak_uint32 index)
 {
     ak_uint32 child_size; /* Рамзер дочернего элемента */
@@ -265,6 +306,11 @@ int ak_asn_delete_nested_elem(ak_asn_tlv p_tlv_parent, ak_uint32 index)
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv_root указатель на корневую структуру, представляющую блок TLV
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 void ak_asn_free_tree(ak_asn_tlv p_tlv_root)
 {
     if(p_tlv_root)
@@ -276,7 +322,6 @@ void ak_asn_free_tree(ak_asn_tlv p_tlv_root)
             {
                 ak_asn_free_tree(&p_tlv_root->m_data.m_constructed_data->mp_arr_of_data[index]);
             }
-
 
             free(p_tlv_root->m_data.m_constructed_data->mp_arr_of_data);
         }
@@ -299,6 +344,12 @@ void ak_asn_free_tree(ak_asn_tlv p_tlv_root)
     }
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param p_size указатель на переменную, в которую запишется размер
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_get_size(ak_asn_tlv p_tlv, ak_uint32* p_size)
 {
     if (!p_tlv || !p_size)
@@ -310,6 +361,11 @@ int ak_asn_get_size(ak_asn_tlv p_tlv, ak_uint32* p_size)
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv_root указатель на корневую структуру, представляющую блок TLV
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_update_size(ak_asn_tlv p_root_tlv)
 {
     ak_uint8 i = 0;
@@ -339,6 +395,10 @@ int ak_asn_update_size(ak_asn_tlv p_root_tlv)
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param data_tag тег данных
+    @return Строка с символьным представлением тега                                                */
+/* ----------------------------------------------------------------------------------------------- */
 static char* get_universal_tag_description(tag data_tag)
 {
     /* tag_description - статическая переменная */
@@ -378,6 +438,10 @@ static char* get_universal_tag_description(tag data_tag)
     return  tag_description;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param data_tag тег данных
+    @return Строка с символьным представлением тега                                                */
+/* ----------------------------------------------------------------------------------------------- */
 static char* get_tag_description(tag data_tag)
 {
     /* tag_description - статическая переменная */
@@ -394,12 +458,17 @@ static char* get_tag_description(tag data_tag)
         return NULL;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param data_tag тег данных
+    @param data_len длина данных
+    @param p_data указатель на данные                                                              */
+/* ----------------------------------------------------------------------------------------------- */
 static void asn_print_universal_data(tag data_tag, ak_uint32 data_len, ak_byte* p_data)
 {
-    size_t i = 0;
-    bit_string bit_string_data;
-    char *str, *oid;
-    ak_uint32 integer_val;
+    size_t i = 0; /* Индекс */
+    bit_string bit_string_data; /* Значение типа Bit string */
+    char *str, *oid; /* Значение данных, представляемое в виде строки */
+    ak_uint32 integer_val; /* Значение типа Integer */
 
     if (DATA_CLASS(data_tag) == UNIVERSAL)
     {
@@ -417,22 +486,10 @@ static void asn_print_universal_data(tag data_tag, ak_uint32 data_len, ak_byte* 
             break;
         case TBIT_STRING:
             new_asn_get_bitstr(p_data, data_len, &bit_string_data);
-
-            for( i = 0; i < bit_string_data.m_val_len; i++)
-            {
-                ak_int8 j = 0;
-                ak_uint8 unused_bits = 0;
-                if (i == bit_string_data.m_val_len - 1)
-                    unused_bits = bit_string_data.m_unused;
-
-                for( j = 7; j >= (ak_int8)unused_bits; j--)
-                {
-                    ak_uint8 bit = (bit_string_data.mp_value[i] >> j) & (ak_uint8)0x01;
-                    printf("%u", bit);
-                }
-            }
-            putchar('\n');
+            ak_bitstr_get_str(&bit_string_data, &str);
+            printf("%s\n", str);
             free(bit_string_data.mp_value);
+            free(str);
             break;
         case TOCTET_STRING:
             ak_asn_print_hex_data(p_data, data_len);
@@ -502,11 +559,17 @@ static void asn_print_universal_data(tag data_tag, ak_uint32 data_len, ak_byte* 
 
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param is_last флаг, указывающий, является ли текущая структра s_asn_tlv последней дочерней
+           структурой                                                                              */
+/* ----------------------------------------------------------------------------------------------- */
 static void new_ak_asn_print_tlv(ak_asn_tlv p_tlv, bool_t is_last)
 {
-    size_t p_curr_prefix_len;
-    char* p_tag_desc;
-    int tag_desc_len;
+    size_t p_curr_prefix_len; /* Длина префикса текущих данных */
+    char* p_tag_desc; /* Символьное представление тега */
+    int tag_desc_len; /* Длина символьного представления тега */
+
     p_tag_desc = get_tag_description(p_tlv->m_tag);
     tag_desc_len = (int)strlen(p_tag_desc);
 
@@ -597,24 +660,39 @@ static void new_ak_asn_print_tlv(ak_asn_tlv p_tlv, bool_t is_last)
     }
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tree указатель не струкутуру, представляющую дерево данных ASN.1                      */
+/* ----------------------------------------------------------------------------------------------- */
 void new_ak_asn_print_tree(ak_asn_tlv p_tree)
 {
     new_ak_asn_print_tlv(p_tree, ak_false);
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_data указатель данные
+    @param size длинна данных                                                                      */
+/* ----------------------------------------------------------------------------------------------- */
 void ak_asn_print_hex_data(ak_byte* p_data, ak_uint32 size)
 {
     ak_uint32 i; /* индекс */
     for (i = 0; i < size; i++) printf("%02X", p_data[i]);
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_asn_data указатель на ASN.1 последовательность
+    @param size длина ASN.1 последовательности
+    @param p_tlv указатель на структуру, в которую запишутся данные из ASN.1 последовательности
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_parse_data(ak_pointer p_asn_data, size_t size, ak_asn_tlv* pp_tlv)
 {
+    //TODO: заменить последний параметр на ak_asn_tlv p_tlv
+    int error;         /* Код ошибки */
     ak_byte* p_curr;   /* Указатель на текущую позицию */
     ak_byte* p_end;    /* Указатель на конец tlv */
     tag      data_tag; /* Тег данных */
     size_t   data_len; /* Длина данных */
-    int error;         /* Код ошибки */
 
     if(!p_asn_data || !size || !pp_tlv)
         return ak_error_null_pointer;
@@ -647,8 +725,6 @@ int ak_asn_parse_data(ak_pointer p_asn_data, size_t size, ak_asn_tlv* pp_tlv)
             p_curr += child_size;
             index++;
         }
-//        pp_tlv->m_data.m_constructed_data->mp_arr_of_data[0] = p_nested_tlv;
-//        pp_tlv->m_data.m_constructed_data->m_curr_size++;
     }
     else
     {
@@ -666,6 +742,13 @@ int ak_asn_parse_data(ak_pointer p_asn_data, size_t size, ak_asn_tlv* pp_tlv)
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param pp_pos указатель на указательна на текущую позицию в ASN.1 последовательности
+    @param p_end указатель на конец ASN.1 последовательности
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 static int ak_asn_encode_tlv(ak_asn_tlv p_tlv, ak_byte** pp_pos, ak_byte* p_end)
 {
     int error;      /* Код ошибки */
@@ -714,6 +797,14 @@ static int ak_asn_encode_tlv(ak_asn_tlv p_tlv, ak_byte** pp_pos, ak_byte* p_end)
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_tlv указатель на структуру, представляющую блок TLV
+    @param pp_asn_data указатель на указательна на массив, в который запишется ASN.1
+           последовательность
+    @param p_size указатель на переменную, в которую запишется размер ASN.1 последовательности
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int ak_asn_build_data(ak_asn_tlv p_tlv, ak_byte** pp_asn_data, ak_uint32* p_size)
 {
     int error; /* Код ошибки */
@@ -744,27 +835,3 @@ int ak_asn_build_data(ak_asn_tlv p_tlv, ak_byte** pp_asn_data, ak_uint32* p_size
 
     return ak_error_ok;
 }
-
-int ak_asn_realloc(ak_pointer* pp_mem, size_t old_size, size_t new_size)
-{
-    ak_pointer p_new_mem;
-
-    if(!pp_mem)
-        return ak_error_wrong_length;
-
-    if(!(*pp_mem) || (new_size <= old_size))
-        return ak_error_invalid_value;
-
-    p_new_mem = malloc(new_size * sizeof(ak_asn_tlv));
-    if(!p_new_mem)
-        return ak_error_out_of_memory;
-
-    memcpy(p_new_mem, *pp_mem, old_size);
-
-    free(*pp_mem);
-
-    *pp_mem = p_new_mem;
-
-    return ak_error_ok;
-}
-
