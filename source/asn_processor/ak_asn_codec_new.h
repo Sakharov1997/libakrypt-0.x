@@ -104,7 +104,7 @@ typedef char *object_identifier;
 typedef struct s_asn_bit_str_type bit_string;
 typedef struct s_asn_oct_str_type octet_string;
 
-/* Создаем псевданимы типов, чтобы можно было сослаться друг на друга при описании стурктур */
+/* Создаем псевдонимы типов, чтобы можно было сослаться друг на друга при описании стурктур */
 typedef struct s_constructed_data s_constructed_data_t;
 typedef struct s_asn_tlv s_asn_tlv_t;
 
