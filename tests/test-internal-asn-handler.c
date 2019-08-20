@@ -140,7 +140,7 @@ int ak_function_log_logfile( const char *message )
 {
     if( message != NULL )
     {
-        FILE* err_file = fopen("/Users/anton/Desktop/log.txt", "a+");
+        FILE* err_file = fopen("/Users/anton/Desktop/log.txt", "w+");
         if(err_file)
         {
             fprintf(err_file, "%s\n", message);
