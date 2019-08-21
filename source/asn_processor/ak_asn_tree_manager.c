@@ -466,7 +466,6 @@ static char* get_tag_description(tag data_tag)
 /* ----------------------------------------------------------------------------------------------- */
 static void asn_print_universal_data(tag data_tag, ak_uint32 data_len, ak_byte* p_data)
 {
-    size_t i = 0; /* Индекс */
     bit_string bit_string_data; /* Значение типа Bit string */
     char *str, *oid; /* Значение данных, представляемое в виде строки */
     ak_uint32 integer_val; /* Значение типа Integer */
