@@ -123,9 +123,9 @@ struct s_constructed_data
 union u_data_representation
 {
   /*! \brief указатель на примитивные данные. (Закодированые по правилам ASN.1 данные) */
-  ak_byte* m_primitive_data;
+  ak_byte* mp_primitive_data;
   /*! \brief указатель на составные данные. */
-  s_constructed_data_t* m_constructed_data;
+  s_constructed_data_t* mp_constructed_data;
 };
 
 /*! \brief Струкртура, хранящая массив указателей на данные, из которых состоит составной TLV. */
@@ -154,7 +154,7 @@ typedef struct s_asn_tlv* ak_asn_tlv;
 int ak_asn_build_data(ak_asn_tlv p_tlv, ak_byte** pp_asn_data, ak_uint32* p_size);
 
 /*! \brief Преобразует структуру s_asn_tlv (дерево) в ASN.1 последовательность. */
-int ak_asn_parse_data(ak_pointer p_asn_data, size_t size, ak_asn_tlv* pp_tlv);
+int ak_asn_parse_data(ak_pointer p_asn_data, size_t size, ak_asn_tlv p_tlv);
 
 /*! \brief Кодирует примитивные ASN.1 данные базовых типов. */
 int ak_asn_encode_universal_data(ak_uint8 tag_number, ak_pointer p_data, char* p_name, ak_asn_tlv p_tlv);

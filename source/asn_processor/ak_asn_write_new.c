@@ -35,40 +35,40 @@ int ak_asn_encode_universal_data(ak_uint8 tag_number, ak_pointer p_data, char* p
     switch (tag_number)
     {
     case TBOOLEAN:
-        error = new_asn_put_bool(*(boolean*)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_bool(*(boolean*)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TINTEGER:
-        error = new_asn_put_int(*(integer*)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_int(*(integer*)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TBIT_STRING:
-        error = new_asn_put_bitstr(*(bit_string*)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_bitstr(*(bit_string*)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TOCTET_STRING:
-        error = new_asn_put_octetstr(*(octet_string*)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_octetstr(*(octet_string*)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TOBJECT_IDENTIFIER:
-        error = new_asn_put_objid((object_identifier)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_objid((object_identifier)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TUTF8_STRING:
-        error = new_asn_put_utf8string((utf8_string)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_utf8string((utf8_string)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TGENERALIZED_TIME:
-        error = new_asn_put_generalized_time((generalized_time)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_generalized_time((generalized_time)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TUTCTIME:
-        error = new_asn_put_utc_time((utc_time)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_utc_time((utc_time)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TVISIBLE_STRING:
-        error = new_asn_put_vsblstr((visible_string)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_vsblstr((visible_string)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TIA5_STRING:
-        error = new_asn_put_ia5string((ia5_string)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_ia5string((ia5_string)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TPRINTABLE_STRING:
-        error = new_asn_put_printable_string((printable_string)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_printable_string((printable_string)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TNUMERIC_STRING:
-        error = new_asn_put_numeric_string((numeric_string)p_data, &p_tlv->m_data.m_primitive_data, &p_tlv->m_data_len);
+        error = new_asn_put_numeric_string((numeric_string)p_data, &p_tlv->m_data.mp_primitive_data, &p_tlv->m_data_len);
         break;
     case TNULL:
         p_tlv->m_data_len = 0;

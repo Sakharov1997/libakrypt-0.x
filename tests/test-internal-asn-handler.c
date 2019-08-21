@@ -94,48 +94,6 @@ static ak_byte test_data[] = {
                        0xe9, 0x4a, 0xdf, 0x61, 0x6f, 0xc4, 0x27, 0x14, 0x00, 0x60, 0xb1, 0x1e, 0x08, 0x13, 0x98, 0x13,
                        0xe1, 0x55, 0x64, 0x0d, 0x66, 0xd7, 0xfe, 0x7e};
 
-
-//static void asn_print_universal(tag data_tag, ak_uint32 data_len, ak_byte* p_data)
-//{
-//    bit_string bit_string_data;
-//    if ((data_tag & UNIVERSAL) == 0)
-//    {
-//        switch (data_tag & 0x1F)
-//        {
-//        case TBOOLEAN:
-//            if(*p_data == 0x00)
-//                printf("False\n");
-//            else
-//                printf("True\n");
-//            break;
-//        case TINTEGER:
-//            //FIXME: переделать под вовод нормельного значения
-//            ak_asn_print_hex_data(p_data, data_len);
-//            break;
-//        case TBIT_STRING:
-//            new_asn_get_bitstr(p_data, data_len, &bit_string_data);
-//
-//            for(size_t i = 0; i < bit_string_data.m_val_len; i++)
-//            {
-//                ak_uint8 unused_bits = 0;
-//                if (i == bit_string_data.m_val_len - 1)
-//                    unused_bits = bit_string_data.m_unused;
-//
-//                for(ak_int8 j = 7; j >= (ak_int8)unused_bits; j--)
-//                {
-//                    ak_uint8 bit = (bit_string_data.mp_value[i] >> j) & (ak_uint8)0x01;
-//                    printf("%u", bit);
-//                }
-//            }
-//            putchar('\n');
-//
-//            break;
-//        default: printf("bad data");
-//        }
-//    }
-//
-//}
-
 int ak_function_log_logfile( const char *message )
 {
     if( message != NULL )
@@ -158,7 +116,7 @@ int ak_function_log_logfile( const char *message )
     int error = ak_error_ok;
 
     /* Структура, хранящая результат декодирования данных */
-    ak_asn_tlv p_root_tlv;
+    s_asn_tlv_t root_tlv;
 
     /* Массив закодированных данных */
     ak_byte* p_plain_data = test_data;
@@ -171,49 +129,55 @@ int ak_function_log_logfile( const char *message )
     /* Результат теста */
     bool_t test_result = ak_true;
 
-    /* массив для хранения данных, считанных с диска */
+    /* Массив для хранения данных, считанных с диска */
     ak_byte file_data[4098];
-    /* размер обрабатываемых данных */
+    /* Размер обрабатываемых данных */
     size_t data_length = sizeof( test_data );
 
-    if( argc > 1 ) {
-      /* интерпретируем параметр программы как имя файла в der-кодировке
+    if( argc > 1 )
+    {
+      /* Интерпретируем параметр программы как имя файла в der-кодировке
          и считываем данные в массив file_data */
        FILE *fp = fopen( argv[1], "rb" );
        data_length = 0;
        memset( file_data, 0, sizeof( file_data ));
 
-       if( !fp ) {
-         printf("Incorrect file name %s\n", argv[1] );
+       if( !fp )
+       {
+         printf("Incorrect file name %s\n", argv[1]);
          return ak_libakrypt_destroy();
        }
-       while( !feof(fp)) {
-        fread( file_data+data_length, 1, 1, fp ); data_length++;
-        if( data_length >= sizeof( file_data )) break;
+
+       while( !feof(fp))
+       {
+           fread( file_data+data_length, 1, 1, fp );
+           data_length++;
+           if(data_length >= sizeof( file_data ))
+               break;
        }
+
        data_length--;
        fclose(fp);
        p_plain_data = file_data;
     }
 
-
     /* Инициализируем библиотеку */
     if (ak_libakrypt_create( ak_function_log_stderr ) != ak_true) return ak_libakrypt_destroy();
 
     /* Декодируем данные */
-    printf("parsing result code: %d\n", error = ak_asn_parse_data( p_plain_data, data_length, &p_root_tlv));
-    if( error != ak_error_ok ) {
+    printf("parsing result code: %d\n", error = ak_asn_parse_data( p_plain_data, data_length, &root_tlv));
+    if( error != ak_error_ok )
+    {
       printf("Parsing error\n");
       return ak_libakrypt_destroy();
     }
 
     /* Выводим декодированые данные в виде дерева */
     printf("Decoded data:\n");
-
-    new_ak_asn_print_tree(p_root_tlv);
+    new_ak_asn_print_tree(&root_tlv);
 
     /* Кодируем данные обратно */
-    ak_asn_build_data(p_root_tlv, &p_encoded_data, &size);
+    ak_asn_build_data(&root_tlv, &p_encoded_data, &size);
 
     /* Выводим исходную ASN.1 последовательность */
     printf("%-20s", "Original data : ");
@@ -230,35 +194,46 @@ int ak_function_log_logfile( const char *message )
     {
         test_result = ak_false;
         printf("Sizes differ, original: %u, encoded: %u\n", (ak_uint32)data_length, size );
-        if( size < data_length ) {
-          printf("Original data greather then encoded data!\n");
-        } else printf("Encoded data greather then original data!\n");
+        if( size < data_length )
+            printf("Original data greather then encoded data!\n");
+        else
+            printf("Encoded data greather then original data!\n");
     }
 
     /* Сравниваем исходные данные с закодированными */
-    for ( i = 0; i < ak_min( size, data_length ); i++) {
-      if( p_plain_data[i] != p_encoded_data[i]) {
-
-        printf("Data differ at %u byte\n", i + 1);
-        test_result = ak_false;
-        break;
+    for ( i = 0; i < ak_min( size, data_length ); i++)
+    {
+      if( p_plain_data[i] != p_encoded_data[i])
+      {
+          printf("Data differ at %u byte\n", i + 1);
+          test_result = ak_false;
+          break;
       }
     }
 
-    if(test_result) {
-      if( argc>1 ) printf("Test for file %s passed!\n", argv[1] );
-          else printf("Test passed!\n");
-    } else {
-      if( argc>1 ) printf("Test for file %s failed!\n", argv[1] );
-        else printf("Test failed!\n");
+    if(test_result)
+    {
+      if(argc > 1)
+          printf("Test for file %s passed!\n", argv[1] );
+      else
+          printf("Test passed!\n");
+    }
+    else
+    {
+      if(argc > 1)
+          printf("Test for file %s failed!\n", argv[1] );
+      else
+          printf("Test failed!\n");
     }
 
     /* Освобождаем память */
-    ak_asn_free_tree(p_root_tlv);
+    ak_asn_free_tree(&root_tlv);
     free(p_encoded_data);
 
-  /* Деинициализируем библиотеку */
-   ak_libakrypt_destroy();
-  if( test_result ) return EXIT_SUCCESS;
-   else return EXIT_FAILURE;
+    /* Деинициализируем библиотеку */
+    ak_libakrypt_destroy();
+    if( test_result )
+        return EXIT_SUCCESS;
+    else
+        return EXIT_FAILURE;
 }
