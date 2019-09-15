@@ -350,7 +350,7 @@ int new_asn_get_bool(ak_byte *p_buff, size_t len, boolean *p_value)
 }
 
 /* ----------------------------------------------------------------------------------------------- */
-/*! @param p_buff указатель на закодированное время
+/*! @param p_buff указатель на закодированное время (Generalized)
     @param len длинна блока данных
     @param p_time указатель переменную, содержащую указатель на строку для хранения времени
     @return В случае успеха функция возввращает ak_error_ok (ноль).
@@ -406,58 +406,77 @@ int new_asn_get_generalized_time(ak_byte *p_buff, size_t len, generalized_time *
     return ak_error_ok;
 }
 
-int new_asn_get_ia5string(ak_byte* p_buff, ak_uint32 size, ia5_string* p_str)
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_buff указатель на закодированную IA5 строку
+    @param len длинна блока данных
+    @param p_str указатель на переменную, содержащую указатель на IA5 строку
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
+int new_asn_get_ia5string(ak_byte* p_buff, ak_uint32 len, ia5_string* p_str)
 {
     ak_uint32 i;
-    char c;
 
     *p_str = NULL;
 
-    for(i = 0; i < size; i++)
+    for(i = 0; i < len; i++)
     {
-        c = p_buff[i];
         if((unsigned char)p_buff[i] > 127)
             return ak_error_message(ak_error_wrong_asn1_decode, __func__, "unallowable symbol");
 
     }
 
-    *p_str = malloc(size + 1);
+    *p_str = malloc(len + 1);
     if(!(*p_str))
         return ak_error_out_of_memory;
 
-    memcpy(*p_str, p_buff, size);
+    memcpy(*p_str, p_buff, len);
 
-    *(*p_str + size) = '\0';
+    *(*p_str + len) = '\0';
 
     return ak_error_ok;
 }
 
-int new_asn_get_printable_string(ak_byte* p_buff, ak_uint32 size, printable_string* p_str)
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_buff указатель на закодированную Printable строку
+    @param len длинна блока данных
+    @param p_str указатель на переменную, содержащую указатель на Printable строку
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
+int new_asn_get_printable_string(ak_byte* p_buff, ak_uint32 len, printable_string* p_str)
 {
     *p_str = NULL;
 
-    if(check_prntbl_str((char *)p_buff, size) == ak_false)
+    if(check_prntbl_str((char *)p_buff, len) == ak_false)
         return ak_error_message(ak_error_wrong_asn1_decode, __func__, "unallowable symbol");
 
-    *p_str = malloc(size + 1);
+    *p_str = malloc(len + 1);
     if(!(*p_str))
         return ak_error_out_of_memory;
 
-    memcpy(*p_str, p_buff, size);
+    memcpy(*p_str, p_buff, len);
 
-    *(*p_str + size) = '\0';
+    *(*p_str + len) = '\0';
 
     return ak_error_ok;
 }
 
-int new_asn_get_numeric_string(ak_byte* p_buff, ak_uint32 size, numeric_string* p_str)
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_buff указатель на закодированную Numeric строку
+    @param len длинна блока данных
+    @param p_str указатель на переменную, содержащую указатель на Numeric строку
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
+int new_asn_get_numeric_string(ak_byte* p_buff, ak_uint32 len, numeric_string* p_str)
 {
     ak_uint32 i;
     char c;
 
     *p_str = NULL;
 
-    for(i = 0; i < size; i++)
+    for(i = 0; i < len; i++)
     {
         c = p_buff[i];
         if(!((c >= '0' && c <= '9') || c == ' '))
@@ -465,17 +484,24 @@ int new_asn_get_numeric_string(ak_byte* p_buff, ak_uint32 size, numeric_string* 
 
     }
 
-    *p_str = malloc(size + 1);
+    *p_str = malloc(len + 1);
     if(!(*p_str))
         return ak_error_out_of_memory;
 
-    memcpy(*p_str, p_buff, size);
+    memcpy(*p_str, p_buff, len);
 
-    *(*p_str + size) = '\0';
+    *(*p_str + len) = '\0';
 
     return ak_error_ok;
 }
 
+/* ----------------------------------------------------------------------------------------------- */
+/*! @param p_buff указатель на закодированное время (UTC)
+    @param len длинна блока данных
+    @param p_time указатель переменную, содержащую указатель на строку для хранения времени
+    @return В случае успеха функция возввращает ak_error_ok (ноль).
+    В противном случае, возвращается код ошибки.                                                   */
+/* ----------------------------------------------------------------------------------------------- */
 int new_asn_get_utc_time(ak_byte* p_buff, ak_uint32 len, utc_time* p_time)
 {
     generalized_time date_time;

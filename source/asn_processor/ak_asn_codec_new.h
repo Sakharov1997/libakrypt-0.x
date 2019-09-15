@@ -222,13 +222,13 @@ int new_asn_get_bool(ak_byte *p_buff, size_t len, boolean *p_value);
 int new_asn_get_generalized_time(ak_byte *p_buff, size_t len, generalized_time *p_time);
 
 /*! \brief Декодирует Printable string из ASN.1 последовательности. */
-int new_asn_get_printable_string(ak_byte* p_buff, ak_uint32 size, printable_string* p_str);
+int new_asn_get_printable_string(ak_byte* p_buff, ak_uint32 len, printable_string* p_str);
 
 /*! \brief Декодирует IA5 string из ASN.1 последовательности. */
-int new_asn_get_ia5string(ak_byte* p_buff, ak_uint32 size, ia5_string* p_str);
+int new_asn_get_ia5string(ak_byte* p_buff, ak_uint32 len, ia5_string* p_str);
 
 /*! \brief Декодирует Numeric string из ASN.1 последовательности. */
-int new_asn_get_numeric_string(ak_byte* p_buff, ak_uint32 size, numeric_string* p_str);
+int new_asn_get_numeric_string(ak_byte* p_buff, ak_uint32 len, numeric_string* p_str);
 
 /*! \brief Декодирует UTC time из ASN.1 последовательности. */
 int new_asn_get_utc_time(ak_byte* p_buff, ak_uint32 len, utc_time* p_time);
